@@ -1,1 +1,7 @@
 # visitor-pattern-with-Golang
+
+## What is visitor pattern?
+
+**Visitor** is a behavioral design pattern that allows **adding new behaviors to existing class hierarchy without altering any existing code**.
+
+
