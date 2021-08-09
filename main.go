@@ -2,51 +2,73 @@ package main
 
 import "fmt"
 
-type shape interface {
-	getType() string
-	accept(visitor)
+type Customer interface {
+	Accept(Visitor)
 }
 
-type visitor interface {
-	visitForSquare(*square)
-	visitForCircle(*circle)
+type Visitor interface {
+	Visit(Customer)
 }
 
-type square struct {
-	side int
+type EnterpriseCustomer struct {
+	name string
 }
 
-func (s *square) accept(v visitor) {
-	v.visitForSquare(s)
+type CustomerCol struct {
+	customers []Customer
 }
 
-func (s *square) getType() string {
-	return "Square"
+func (c *CustomerCol) Add(customer Customer) {
+	c.customers = append(c.customers, customer)
 }
 
-type circle struct {
-	radius int
+func (c *CustomerCol) Accept(visitor Visitor) {
+	for _, customer := range c.customers {
+		customer.Accept(visitor)
+	}
 }
 
-func (c *circle) accept(v visitor) {
-	v.visitForCircle(c)
+func NewEnterpriseCustomer(name string) *EnterpriseCustomer {
+	return &EnterpriseCustomer{
+		name: name,
+	}
 }
 
-func (c *circle) getType() string {
-	return "Circle"
+func (c *EnterpriseCustomer) Accept(visitor Visitor) {
+	visitor.Visit(c)
 }
 
-func main() {
-	square := &square{side: 2}
-	circle := &circle{radius: 3}
+type IndividualCustomer struct {
+	name string
+}
 
-	areaCalculator := &areaCalculator{}
+func NewIndividualCustomer(name string) *IndividualCustomer {
+	return &IndividualCustomer{
+		name: name,
+	}
+}
 
-	square.accept(areaCalculator)
-	circle.accept(areaCalculator)
+func (c *IndividualCustomer) Accept(visitor Visitor) {
+	visitor.Visit(c)
+}
 
-	fmt.Println()
-	middleCoordinates := &middleCoordinates{}
-	square.accept(middleCoordinates)
-	circle.accept(middleCoordinates)
+type ServiceRequestVisitor struct{}
+
+func (*ServiceRequestVisitor) Visit(customer Customer) {
+	switch c := customer.(type) {
+	case *EnterpriseCustomer:
+		fmt.Printf("serving enterprise customer %s\n", c.name)
+	case *IndividualCustomer:
+		fmt.Printf("serving individual customer %s\n", c.name)
+	}
+}
+
+// only for enterprise
+type AnalysisVisitor struct{}
+
+func (*AnalysisVisitor) Visit(customer Customer) {
+	switch c := customer.(type) {
+	case *EnterpriseCustomer:
+		fmt.Printf("analysis enterprise customer %s\n", c.name)
+	}
 }
